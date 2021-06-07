@@ -1,7 +1,7 @@
 # PSY6422_project
 PSY6422 Data Analysis and Visualisation Project
 
-This project examines the changes in house affordability ratios in England and Wales between 2002 and 2020, using data on Median housr prices (Pound Sterling, £), Median Annual Residence-based Earnings (Pound Sterling, £) and Affordability Ratios from a publically available dataset on the 'Office for National Statistics' website.
+This project examines the changes in house affordability ratios in England and Wales between 2002 and 2020, using data on Median house prices (Pound Sterling, £), Median Annual Residence-based Earnings (Pound Sterling, £) and Affordability Ratios from a publically available dataset on the 'Office for National Statistics' website.
 
 **Repository Notes:**
 
