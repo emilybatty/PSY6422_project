@@ -1,0 +1,256 @@
+---
+title: "PSY6422_project"
+author: "Emily Batty"
+date: "27/05/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+# to hide/prevent any errors or messages from appearing on the final markdown page
+# setting figure heights and width
+knitr::opts_chunk$set(fig.width = 10, fig.height = 6, echo = TRUE,fig.show = "hold", warning = FALSE, results = TRUE, message = FALSE)
+
+```
+
+```{r libraries}
+
+# opening the libraries needed for data preparation and graph functions
+
+library(tidyverse) # contains functions to manage data
+library(ggplot2) # creating graphs and visualisations
+library(readr) # help read the data 
+
+```
+
+```{r image, out.width="60%", fig.align='center'}
+
+# creating the path to embed an external image of a house onto the markdown page. Centrally aligned.
+
+image1 <- '/Postgrad/semester2_CNHN/PSY6422/images/house.jpg'
+knitr::include_graphics(image1)
+
+```
+
+## Has housing become unaffordable? Exploring the changes in housing affordability ratios in England and Wales from 2002 to 2020.
+
+&nbsp;
+&nbsp;
+
+### DATA ORIGINS:
+
+The data used in this project was sourced and obtained from a report completed by the [Office for National Statistics](https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/ratioofhousepricetoresidencebasedearningslowerquartileandmedian) which is freely available and accessible online. The report looked at the lower Quartile and median house price values and residence-based earnings in England, Wales, English regions and counties (2002 to 2020) but the current project focusses solely on the median values of England and Wales. 
+
+The current data set contains variables related to the median house price per country in Pound Sterling (£), the median gross annual residence-based earnings per country in Pound Sterling (£) (referred to as income in the project) and the ratio of median house price to median gross annual income from September 2002 to September 2020 in both England and Wales.
+
+The table below provides a description of the variables used:  
+
+
+|Variable      | Description
+|-------------:|:--------------------------------------------------------|
+|Year          | Year of valuation (from 2002 to 2020) |
+|Country        | Country of valuation (England or Wales) |
+|Median House Price  |House price statistics are based on the price paid data from the Land Registry|
+|Median Residence-based Earnings (Income)        | Residence-based refers to the area in which the employee lives not works. Earnings are taken from the Annual Survey of Hours and Earnings and are based on full-time earnings only. |
+|Affordability Ratio        | Indicates on average how affordable it is to purchase a house. Lower ratios (closer to 0) demonstrate it is more affordable, whilst higher ratios indicate that it is less affordable. It is calculated by dividing the residence based earning of the country from the Median house price. For example: Wales (2002): House Price (67,500) / Earnings (18,411) = Ratio (3.67)|
+
+&nbsp;
+&nbsp;
+
+### RESEARCH QUESTIONS:
+
+* How much disparity is there between median house price and annual incomes per country?
+
+* How has housing affordability truly changed in England and Wales between 2002 and 2020?
+
+* How has this disparity between median house price and annual income impacted upon housing affordability in England and Wales between 2002 and 2020?
+
+&nbsp;
+&nbsp;
+
+### DATA PREPARATION:
+The original data set provided information on house price, annual residence-based earnings and affordability ratios over 19 years in England, Wales and a variety of English regions and counties. In the current investigation I wanted to solely focus on England and Wales only. The original data set was spread across several spreadsheets, so to produce a visualisation I placed all data relevant to a particular variable (e.g. House Price) into a single column, enabling me to plot the data easily. I subsequently later grouped it by Country.
+
+```{r data_wrangle, results=TRUE}
+
+# loading and setting the path of the data. 
+# adding the data to the environment tab as a variable
+
+setwd("/Postgrad/semester2_CNHN/PSY6422/")
+df <- read.csv("data/6422rawdata.csv", header = TRUE, sep = ",") 
+
+# Renaming the Country column for easier coding later
+df <- df %>% 
+  rename(Country = ï..Country)
+
+# changing the variables from characters to numeric or factor. Numeric values to ensure continuous scales can be used on the graph y axis later.
+# gsub element replaces all matches of the data string
+
+df$Income <- as.numeric(gsub(",","",df$Income))
+df$House.price <- as.numeric(gsub(",","",df$House.price))
+df$Year <- as.factor(df$Year)
+
+# displaying the first 6 rows of the raw data set
+head(df)
+
+```
+&nbsp;
+&nbsp;
+
+### VISUALISATION 1:
+This visualisation compares both income and house price value variation of England and Wales over a 19 year period. It aims to show the differences in Annual Incomes between England and Wales whilst also showing the disparity between income rate and house prices from 2002 to 2020. 
+
+```{r v_comparison}
+
+# defining figure 1 graph labels (x axis, y axis, title)
+xlab.a <- "Year"
+ylab.a <- "Pound Sterling (£)"
+ggtitle.a <- "Median House Price & Annual Income in England & Wales (2002-20)"
+
+# Creating a line graph with points to display both income and house prices in England and Wales.
+# Pound Sterling (£) on the y axis and Year on the x axis. 4 different lines will be plotted (line type [solid or dotted] denotes House Price or Income. The 2 separate colours represent England and Wales. Saving the plot details into a variable called fig1 into the environment.
+
+fig1 <- ggplot(data = df, mapping = aes(x=Year, group=Country)) +
+  geom_line(aes(y=House.price,color=Country,linetype="dotted")) + 
+  geom_point(aes(y=House.price,color=Country)) +
+  geom_line(aes(y=Income,color=Country,linetype="solid")) +
+  geom_point(aes(y=Income,color=Country)) +
+  
+# defining the colours (red = England and blue = Wales)  
+  
+  scale_color_manual(values = c(c('#FF6666', '#6666FF'))) +
+
+# setting the y axis scale  
+  
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  
+# defining each line on the graph through a key - defined by data type 
+  scale_linetype_discrete(name = "Type of Data", labels = c("Median House Price", "Median Annual Income"))  +
+  
+# adding labels for x axis, y axis and title  
+  labs(x = xlab.a, y = ylab.a) +
+  ggtitle(ggtitle.a) +
+  
+# changing plot appearance - making the background lighter, defining legend position and changing font sizes for axes, titles and keys.    
+  theme_light(base_size=10) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) +
+  theme(axis.text.y = element_text(size =10)) +
+  theme(axis.title = element_text(size = 14, face = "bold")) +
+  theme(legend.text = element_text(size = 10)) + theme(legend.title = element_text(size = 12, face = "bold")) +
+  theme(legend.position="right") +
+  theme(plot.title = element_text(size = 16))
+  
+# display figure 1
+fig1
+
+```
+
+```{r saving the comparison linegraph, echo=FALSE}
+
+# saving the line graph comparison output (hiding it from view on markdown page with echo=false function)
+ggsave("/Postgrad/semester2_CNHN/PSY6422/figs/comparing.house.price.to.income.png")
+
+```
+&nbsp;
+
+**_Research Question: How much disparity is there between Medium House Prices and Medium Annual Incomes per country?_**
+
+From looking at the graph it can be seen that there is no substantial difference between median annual incomes in England and Wales. The small gap remains constant across the 19-year timeframe, with incomes in England consistently being slightly higher. The growth of these incomes across the 19-year time-period is very minimal. 
+
+However, there is a significant difference in median house prices between England and Wales. In England, house values increased by £150,000 between 2002 and 2020, whereas in Wales they only increased by £100,000 across the 19 years. House prices take a dip in 2008-2009 in both countries, reflecting the [Financial crisis](https://en.wikipedia.org/wiki/Financial_crisis_of_2007%E2%80%932008) and housing market crash of 2008. After this there was a significantly larger increase in house prices only in England, whereas the values in Wales increased at a much slower rate. Over 19 years the difference in house price in England and Wales has widened, with it being significantly worse in England as the growth in median house price has increased by a much greater extent  
+
+The disparity between annual income and house price is very high for both countries, but significantly worse in England. 
+
+&nbsp;
+&nbsp;
+
+### VISUALISATION 2:
+This visualisation compares House Affordability Ratios in England and Wales from 2002 to 2020. Values closer to zero represent good affordability, whilst larger values indicate more unaffordable housing.
+
+
+```{r v_house.affordability}
+
+# defining figure 2 graph labels
+xlab.b <- "Year"
+ylab.b <- "House Affordability Ratio"
+ggtitle.b <- "Housing Affordability ratio changes in England & Wales (2002-2020)"
+
+# line graph with points comparing house affordability ratios in England &  Wales.
+# Year on the x axis and House Affordability Ratio on the Y axis. The 2 lines represent England and Wales over the 2002 to 2020 time period. Saving the plot details into the environment as fig2. Data is grouped by country.
+
+fig2 <- ggplot(data = df, mapping = aes(x = Year, y = Affordability.ratio, group=Country)) +
+  geom_line(aes(color=Country)) +
+  geom_point(aes(color=Country)) +
+  
+# defining the colours (red = England and blue = Wales)
+  
+  scale_color_manual(values = c(c('#FF6666', '#6666FF'))) +
+  
+# setting the y axis scale
+  
+  scale_y_continuous(labels = function(x) format(x, scientific = FALSE)) +
+  
+# adding labels for x axis, y axis and title  
+  labs(x = xlab.b, y = ylab.b) +
+  ggtitle(ggtitle.b) +
+  
+# changing plot appearance - making the background lighter, defining legend position. Changing font sizes and angles for axes, titles and keys. Similar to figure 1 to ensure plot consistency on the markdown page. 
+  theme_light(base_size=10) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 10)) +
+  theme(axis.text.y = element_text(size = 10)) +
+  theme(axis.title = element_text(size = 14, face = "bold")) +
+  theme(legend.text = element_text(size = 14)) + theme(legend.title = element_text(size = 14, face = "bold")) +
+  theme(legend.position="right") +
+  theme(plot.title = element_text(size = 16))
+
+# display figure 2
+fig2
+
+```
+
+```{r saving the affordability ratio graph, echo=FALSE}
+
+# saving the line graph affordability ratio comparison output (hiding it from view on markdown page with echo=false function)
+ggsave("/Postgrad/semester2_CNHN/PSY6422/figs/housing.affordability.ratio.png")
+
+```
+&nbsp;
+
+**_Research Question: How has housing affordability truly changed in England and Wales between 2002 and 2020?_**
+
+From looking at the graph it can be seen that up to 2007, England and Wales had the same proportional increase in the Housing Affordability Ratio (HAR). Both ratios dropped between 2007-2009 due to the financial and housing market crash, creating a temporary period whereby house buying became more affordable for more people. 
+
+In Wales from 2010, the HAR fluctuated around 5.5 and has since never exceeded 6.0, highlighting that house affordability in Wales has remained a constant for the last 10 years. 
+However, in England, the HAR plateaued until 2013, but has since increased exponentially (gone from being just over 5 times the annual income to now nearly 8 times). 
+
+The visualisation shows that housing is a lot more affordable in Wales than it is in England.
+The difference between England and Wales for house affordability has increased by over a third (from 1.44 in 2002 to 2.0 in 2020), reflecting a growth of housing affordability that is 25% more in England than Wales.
+
+&nbsp;
+&nbsp;
+
+### SUMMARY:
+
+**_Research Question: How has this disparity between median house price and annual income impacted upon housing affordability in England and Wales between 2002 and 2020?_**
+
+In England, annual incomes have increased by 50% over the last 19 years, but median house prices have increased by 250%, thus house prices are now nearly 8x more than the annual median income. In Wales, annual incomes have also increased by just over 50%, and median house prices have doubled over the last 19 years, thus house prices are now 6x more than the annual median income.
+
+The Housing Affordability Ratio indicates that the disparity between the increase in median income and the increase in house price has grown significantly since 2002, highlighting that housing has become a lot more unaffordable now in both England and Wales. 
+
+
+&nbsp;
+&nbsp;
+
+### CAVEATS:
+The data does not take into account any potential income from inheritance tax providing no reflection on the increase in value from the property that you move from. The impact will be greater on first time buyers whereas people moving up the housing ladder will benefit from an increase in value on their previous property and also have current equity in the housing market, whereas, first time buyers and rentors do not have any existing equity in the housing market, making buying a house a lot more unaffordable.
+Another caveat is that the data only focusses on the prices of houses that are bought, ignoring a large percentage of the population that rent. 
+
+&nbsp;
+&nbsp;
+
+### FUTURE DIRECTIONS:
+The data set from the Office for National Statisitcs also included values for individual counties. It would be useful to include these into a visualisation to compare affordability ratios across England, to see if there are certain counties that appear to be more affordable. This would highlight the most expensive areas to buy properties, and would make clear if there is a North / South difference in house affordability.
+
+&nbsp;
+&nbsp;
+
